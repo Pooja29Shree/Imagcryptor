@@ -3,7 +3,8 @@ from torch.utils.data import DataLoader
 from torchvision import datasets, transforms
 from models import Generator, Discriminator, Reconstructor
 import torch.nn as nn
-
+import os
+from torchvision.utils import save_image
 
 transform = transforms.Compose([
     transforms.Resize((64,64)),
@@ -36,10 +37,13 @@ optD = torch.optim.Adam(D.parameters(), lr=2e-4, betas=(0.5, 0.999))
 bce = nn.BCEWithLogitsLoss().to(device)  # adversarial loss
 l1  = nn.L1Loss().to(device)             # reconstruction loss
 
-epochs = 50  # adjust as needed
+epochs = 200  # More epochs for better learning
+
+# create folder to store encrypted images
+os.makedirs("../exports/encrypted_samples", exist_ok=True)
 
 for epoch in range(epochs):
-    for real, _ in dataloader:
+    for i, (real, _) in enumerate(dataloader):
         real = real.to(device)
         bsz = real.size(0)
 
@@ -62,10 +66,14 @@ for epoch in range(epochs):
         adv_loss = bce(d_fake, torch.ones_like(d_fake))
         recon = R(fake, key)
         recon_loss = l1(recon, real)
-        lossG = adv_loss + 10.0 * recon_loss
+        lossG = adv_loss * 0.1 + 100.0 * recon_loss  # Much stronger reconstruction focus
         optG.zero_grad()
         lossG.backward()
         optG.step()
+
+        # ---- SAVE ENCRYPTED IMAGE ----
+        if i % 100 == 0:  # save every 100 batches
+            save_image(fake*0.5 + 0.5, f"../exports/encrypted_samples/epoch{epoch+1}_batch{i+1}.png")
 
     print(f"Epoch [{epoch+1}/{epochs}]  LossD: {lossD.item():.4f}  "
           f"Adv: {adv_loss.item():.4f}  Recon: {recon_loss.item():.4f}")
