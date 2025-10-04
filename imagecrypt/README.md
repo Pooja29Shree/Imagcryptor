@@ -32,7 +32,7 @@ imagecrypt/
 
 ## 🎯 Two Encryption Approaches
 
-### 🌍 **DCGAN + Virtual Planet Domain (Neural Networks)**
+### 🌍 **DCGAN + Virtual Planet Domain (Neural Network)**
 
 - **Approach:** Deep learning with planetary coordinate key space
 - **Security:** AI-powered complex transformations
